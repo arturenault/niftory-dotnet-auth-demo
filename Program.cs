@@ -35,14 +35,23 @@ while (stopwatch.Elapsed.TotalSeconds < response.ExpiresIn)
         break;
     }
 
+    // authorization_pending just means the user is still signing in
     if (tokenResponse.Data.Error != null && tokenResponse.Data.Error != "authorization_pending")
     {
         throw new Exception($"Error from token endpoint: {tokenResponse.Data.Error} - {tokenResponse.Data.ErrorDescription}");
     }
 }
 
+
+if (token == null)
+{
+    throw new Exception("User did not authenticate in time");
+}
+
+// token.IdToken can be used to make niftory requests for an hour.
 Console.WriteLine($"Initial token: {token.IdToken}");
 
+// The refresh token lasts 2 weeks and can be used to obtain a new id token without prompting the user.
 // Refresh the token just to show that it works.
 var refreshRequest = new RestRequest("/oidc/token");
 refreshRequest.AddHeader("content-type", "application/x-www-form-urlencoded");
